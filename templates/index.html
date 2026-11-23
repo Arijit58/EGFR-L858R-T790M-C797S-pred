@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EGFR C797S ChemBERTa-2 NCE Predictor</title>
+  <!-- Optional JSME 2D Molecule Editor (gracefully degrades if offline) -->
+  <script src="https://jsme-editor.github.io/dist/jsme/jsme.nocache.js" async></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --emerald: #059669;
+      --emerald-bg: #ecfdf5;
+      --coral: #dc2626;
+      --coral-bg: #fef2f2;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+      color: white;
+      padding: 22px 32px;
+      border-bottom: 1px solid #334155;
+    }
+    .header-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 0.88rem;
+      color: #cbd5e1;
+    }
+    .pill-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .header-pill {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 22px 28px 48px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); background: #f1f5f9; }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: 450px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .grid-main { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+      margin-bottom: 18px;
+    }
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.86rem;
+      outline: none;
+      transition: border 0.15s;
+    }
+    textarea:focus, input[type="text"]:focus { border-color: var(--primary); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; width: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      font-size: 0.8rem;
+      padding: 6px 11px;
+    }
+    .btn-outline:hover { background: #e2e8f0; }
+
+    .preset-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 10px 0 16px;
+    }
+    .preset-chip {
+      background: #eef2ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .preset-chip:hover { background: #e0e7ff; }
+
+    #jsme_container {
+      width: 100%;
+      height: 295px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .verdict-banner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 20px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px solid transparent;
+    }
+    .verdict-active { background: var(--emerald-bg); border-color: #a7f3d0; color: #065f46; }
+    .verdict-inactive { background: var(--coral-bg); border-color: #fecaca; color: #991b1b; }
+    .verdict-title { font-size: 1.35rem; font-weight: 800; }
+    .verdict-prob { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+    .bar-track {
+      width: 100%;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.35s ease; }
+
+    .subgrid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 760px) { .subgrid-2 { grid-template-columns: 1fr; } }
+
+    .svg-box {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+    }
+    .svg-box svg { max-width: 100%; height: auto; }
+    .legend-row {
+      display: flex;
+      gap: 14px;
+      font-size: 0.77rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+    .badge-high { background: var(--emerald-bg); color: var(--emerald); border: 1px solid #a7f3d0; }
+    .badge-moderate { background: var(--amber-bg); color: var(--amber); border: 1px solid #fde68a; }
+    .badge-low { background: var(--coral-bg); color: var(--coral); border: 1px solid #fecaca; }
+
+    .prop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+      gap: 10px;
+    }
+    .prop-tile {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 11px;
+    }
+    .prop-tile .k { font-size: 0.74rem; color: var(--muted); font-weight: 600; }
+    .prop-tile .v { font-size: 1.02rem; font-weight: 700; margin-top: 2px; }
+
+    .analog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 820px) { .analog-grid { grid-template-columns: 1fr; } }
+    .analog-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      background: #fcfcfd;
+    }
+    .analog-card svg { max-width: 100%; height: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th { background: #f8fafc; font-weight: 700; color: #334155; }
+    .fig-img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header style="background:#ffffff; color:#0f172a; border-bottom:3px solid #1e3a8a; padding:14px 28px; box-shadow:0 2px 10px rgba(15,23,42,0.06);">
+    <div class="header-inner">
+      <img src="/assets/punjabi_university_logo.png" alt="Punjabi University Patiala" style="height:68px; width:auto; object-fit:contain;" />
+      <div class="brand" style="text-align:center; flex:1 1 380px;">
+        <h1 style="color:#0f172a; font-size:1.45rem;">EGFR<sup>C797S</sup> NCE Activity &amp; Applicability Domain Studio</h1>
+        <p style="color:#475569; margin:3px 0 6px;">Hybrid Fine-Tuned ChemBERTa-2 Chemical Language Model &amp; Chirality-Aware QSAR Screening Suite</p>
+        <div style="display:inline-block; background:#eff6ff; border:1px solid #bfdbfe; color:#1e3a8a; font-size:0.8rem; font-weight:700; padding:4px 14px; border-radius:999px;">
+          Developed by: Mr. Arijit Bhattacharya and Dr. Om Silakari, Department of Pharmaceutical Sciences and Drug Research, Punjabi University, Patiala, Punjab, India
+        </div>
+      </div>
+      <img src="/assets/mml_logo.png" alt="Molecular Modeling Lab" style="height:82px; width:auto; object-fit:contain;" />
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('single', this)">1. Single NCE Predictor &amp; Explainability</button>
+      <button class="tab-btn" onclick="switchTab('batch', this)">2. Batch NCE Library Screening (CSV)</button>
+      <button class="tab-btn" onclick="switchTab('validation', this)">3. Model Benchmark &amp; OECD Validation</button>
+    </div>
+
+    <!-- TAB 1: SINGLE NCE -->
+    <div id="tab-single" class="tab-panel active">
+      <div class="grid-main">
+        <!-- Left Input Column -->
+        <div>
+          <div class="card">
+            <h2>
+              <span>Input NCE Structure</span>
+              <button class="btn btn-outline" type="button" onclick="useDrawnSmiles()">Use Drawn Structure &darr;</button>
+            </h2>
+            <div id="jsme_container">
+              <span id="jsme_placeholder">Interactive 2D Molecule Sketcher loading...<br/>(Paste SMILES or select a preset below anytime)</span>
+            </div>
+
+            <div style="margin-top: 14px;">
+              <label class="label" for="smilesInput">NCE SMILES String (Isomeric SMILES Supported)</label>
+              <textarea id="smilesInput" rows="3">CP(=O)(C)c1ccccc1Nc1nc(Nc2cc(C)c(N3CCC(N4CCN(C)CC4)CC3)cc2OC)ncc1Br</textarea>
+            </div>
+
+            <span class="label" style="margin-top: 12px;">Quick EGFR C797S Benchmark &amp; SAR Cliff Presets</span>
+            <div class="preset-grid">
+              <button class="preset-chip" onclick="loadPreset('CP(=O)(C)c1ccccc1Nc1nc(Nc2cc(C)c(N3CCC(N4CCN(C)CC4)CC3)cc2OC)ncc1Br')">Brigatinib-like P(=O)Me2 NCE [Active]</button>
+              <button class="preset-chip" onclick="loadPreset('C=CC(=O)Nc1cc(Nc2nccc(-c3cn(S(=O)(=O)CC)c4ccccc34)n2)cc2cnn(CCN(C)C)c12')">N-SO2Et Indole Rescue [C797S Active]</button>
+              <button class="preset-chip" onclick="loadPreset('C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)cc2cnn(CCN(C)C)c12')">N-Me Indole Acrylamide [C797S Inactive]</button>
+              <button class="preset-chip" onclick="loadPreset('C([C@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O')">Chiral Cliff [C@H] Isomer [Active]</button>
+              <button class="preset-chip" onclick="loadPreset('C([C@@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O')">Chiral Cliff [C@@H] Isomer [Inactive]</button>
+              <button class="preset-chip" onclick="loadPreset('CCS(=O)(=O)Nc1nc(-c2ccc(F)cc2)c(-c2ccnc(Nc3ccc4n(CCN(C)C)ccc4c3)n2)s1')">Sulfonamide-Thiazole NCE [Active]</button>
+            </div>
+
+            <button class="btn btn-primary" id="predictBtn" onclick="runSinglePrediction()">
+              <span class="spinner" id="singleSpinner"></span>
+              <span>Predict EGFR C797S Activity &amp; Explain</span>
+            </button>
+            <div id="errorBox" style="display:none; margin-top:10px; color:var(--coral); font-size:0.85rem; font-weight:600;"></div>
+          </div>
+        </div>
+
+        <!-- Right Results Column -->
+        <div id="resultColumn">
+          <div class="card" id="verdictCard">
+            <div id="verdictBanner" class="verdict-banner verdict-active">
+              <div>
+                <div style="font-size:0.78rem; text-transform:uppercase; font-weight:700; opacity:0.85;">Predicted EGFR C797S Phenotype</div>
+                <div class="verdict-title" id="predTitle">Ready to Screen</div>
+                <div style="font-size:0.83rem; margin-top:2px;" id="predSubtitle">Click "Predict EGFR C797S Activity" to evaluate NCE</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.76rem; font-weight:700; opacity:0.85;">P(Active)</div>
+                <div class="verdict-prob" id="predProb">--%</div>
+              </div>
+            </div>
+
+            <!-- Component Model Breakdown & Applicability Domain -->
+            <div class="subgrid-2">
+              <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid var(--border);">
+                <span class="label">Internal Model Score Breakdown</span>
+                <div style="margin-bottom:10px;">
+                  <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
+                    <span>Fine-Tuned ChemBERTa-2 LLM (5x TTA)</span>
+                    <span id="scoreLlm">--</span>
+                  </div>
+                  <div class="bar-track"><div id="barLlm" class="bar-fill" style="width:0%; background:#8b5cf6;"></div></div>
+                </div>
+                <div style="margin-bottom:10px;">
+                  <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
+                    <span>Multimodal ChemBERTa + Physchem MLP</span>
+                    <span id="scoreMlp">--</span>
+                  </div>
+                  <div class="bar-track"><div id="barMlp" class="bar-fill" style="width:0%; background:#0ea5e9;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-size:0.82rem; font-weight:600;">
+                    <span>Chirality-Aware ECFP4 Structural Ensemble</span>
+                    <span id="scoreStruct">--</span>
+                  </div>
+                  <div class="bar-track"><div id="barStruct" class="bar-fill" style="width:0%; background:#10b981;"></div></div>
+                </div>
+              </div>
+
+              <div style="background:#f8fafc; padding:14px; border-radius:10px; border:1px solid var(--border);">
+                <span class="label">OECD Applicability Domain (AD) Assessment</span>
+                <div style="margin: 6px 0 10px;">
+                  <span id="adBadge" class="badge badge-high">--</span>
+                </div>
+                <div style="font-size:0.83rem; color:#334155;">
+                  <div><strong>ChemBERTa-2 Latent Cosine Sim (Top-5):</strong> <span id="adCos">--</span> <span style="color:var(--muted); font-size:0.77rem;">(Cutoff: <span id="adCut">--</span>)</span></div>
+                  <div style="margin-top:4px;"><strong>Max Chiral ECFP4 Tanimoto to Train:</strong> <span id="adTan">--</span></div>
+                  <div style="margin-top:4px; font-family:monospace; font-size:0.75rem; color:var(--muted); word-break:break-all;">InChIKey: <span id="outInchi">--</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2D Explainability & Clean Structure -->
+          <div class="card">
+            <h2>Atom-Level Pharmacophore Attribution &amp; Standardized Structure</h2>
+            <div class="subgrid-2">
+              <div>
+                <span class="label">ChemBERTa-2 Gradient + Morgan Attribution Map</span>
+                <div class="svg-box" id="explainSvgBox"><span style="color:var(--muted);">Attribution SVG will appear here</span></div>
+                <div class="legend-row">
+                  <span><i class="dot" style="background:#29c773;"></i>Favors C797S Activity (+1)</span>
+                  <span><i class="dot" style="background:#ef5350;"></i>Detrimental to Activity (0)</span>
+                </div>
+              </div>
+              <div>
+                <span class="label">Standardized Isomeric 2D Depiction</span>
+                <div class="svg-box" id="plainSvgBox"><span style="color:var(--muted);">2D structure will appear here</span></div>
+                <div style="font-size:0.76rem; color:var(--muted); margin-top:6px; word-break:break-all;">
+                  <strong>Canonical SMILES:</strong> <span id="outCanSmiles">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NCE Drug-Likeness & Pharmacophore Motifs -->
+          <div class="card">
+            <h2>
+              <span>NCE Physicochemical &amp; Medicinal Chemistry Profile</span>
+              <span id="ruleBadges"></span>
+            </h2>
+            <div class="prop-grid" id="propGrid"></div>
+            <div style="margin-top:12px; font-size:0.84rem;">
+              <strong>Detected EGFR / Heterocycle Motifs:</strong>
+              <span id="motifList" style="color:var(--muted);">--</span>
+            </div>
+          </div>
+
+          <!-- Nearest Training Analogs -->
+          <div class="card">
+            <h2>Top-3 Nearest Experimental Analogs in EGFR C797S Training Set (SAR Context)</h2>
+            <div class="analog-grid" id="analogGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BATCH VIRTUAL SCREENING -->
+    <div id="tab-batch" class="tab-panel">
+      <div class="subgrid-2">
+        <div class="card">
+          <h2>Option A: Upload CSV Library</h2>
+          <p style="font-size:0.86rem; color:var(--muted); margin-top:0;">Upload any <code>.csv</code> file containing a <code>SMILES</code> column (and optional <code>ID</code>/<code>No.</code>/<code>Name</code> column).</p>
+          <input type="file" id="csvFileInput" accept=".csv" style="margin-bottom:14px; display:block;" />
+          <button class="btn btn-primary" onclick="runCsvBatch()">Screen Uploaded CSV on CPU</button>
+        </div>
+
+        <div class="card">
+          <h2>
+            <span>Option B: Paste Multi-NCE List</span>
+            <button class="btn btn-outline" onclick="loadSampleBatch()">Load 6-NCE Demo Library</button>
+          </h2>
+          <label class="label">Format: ID, SMILES (or one SMILES per line)</label>
+          <textarea id="batchText" rows="5" placeholder="NCE-01, CP(=O)(C)c1ccccc1Nc1nc(Nc2ccc(N3CCN(C)CC3)cc2OC)ncc1Cl&#10;NCE-02, C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)c(OC)cc1N(C)CCN(C)C"></textarea>
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="runTextBatch()">Screen Pasted NCEs</button>
+        </div>
+      </div>
+
+      <div class="card" id="batchResultsCard" style="display:none;">
+        <h2>
+          <span id="batchSummaryTitle">Batch Screening Results</span>
+          <button class="btn btn-outline" onclick="downloadBatchCsv()">Download Enriched CSV &darr;</button>
+        </h2>
+        <div style="overflow-x:auto;">
+          <table id="batchTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Prediction</th>
+                <th>P(Active)</th>
+                <th>ChemBERTa Score</th>
+                <th>AD Status</th>
+                <th>Max Tanimoto</th>
+                <th>MW</th>
+                <th>cLogP</th>
+                <th>TPSA</th>
+                <th>QED</th>
+                <th>Lipinski</th>
+                <th>Canonical SMILES</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: MODEL BENCHMARK & OECD VALIDATION -->
+    <div id="tab-validation" class="tab-panel">
+      <div class="card">
+        <h2>OECD QSAR Validation Summary — EGFR C797S Dataset (Train N = 222 | External Test N = 148)</h2>
+        {% if metrics and metrics.external_test %}
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>5-Fold CV ROC-AUC</th>
+                <th>5-Fold CV MCC</th>
+                <th>External Test ROC-AUC</th>
+                <th>External Test PR-AUC</th>
+                <th>External Test MCC</th>
+                <th>Balanced Acc</th>
+                <th>Sensitivity (SE)</th>
+                <th>Specificity (SP)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for mname, tvals in metrics.external_test.items() %}
+              {% set cvals = metrics.cv_5fold_oof[mname] %}
+              <tr {% if 'Hybrid' in mname %}style="background:#ecfdf5; font-weight:600;"{% endif %}>
+                <td>{{ mname }}</td>
+                <td>{{ "%.4f"|format(cvals.ROC_AUC) }}</td>
+                <td>{{ "%.4f"|format(cvals.MCC) }}</td>
+                <td>{{ "%.4f"|format(tvals.ROC_AUC) }}</td>
+                <td>{{ "%.4f"|format(tvals.PR_AUC) }}</td>
+                <td>{{ "%.4f"|format(tvals.MCC) }}</td>
+                <td>{{ "%.4f"|format(tvals.Balanced_Accuracy) }}</td>
+                <td>{{ "%.4f"|format(tvals.Sensitivity) }}</td>
+                <td>{{ "%.4f"|format(tvals.Specificity) }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.84rem; color:var(--muted); margin-top:12px;">
+          <strong>Leakage Audit:</strong> {{ metrics.dataset.train_test_inchikey_overlap }} overlapping stereo-InChIKeys between Train and Test |
+          <strong>Y-Randomization ({{ metrics.y_randomization.n_permutations }} runs):</strong> Mean Scrambled AUC = {{ metrics.y_randomization.mean_scrambled_auc }}, <em>cR<sub>p</sub><sup>2</sup></em> = <strong>{{ metrics.y_randomization.cRp2 }}</strong> (OECD pass criterion &gt; 0.50) |
+          <strong>External AD Coverage:</strong> {{ metrics.applicability_domain.test_coverage_pct }}% (In-domain ROC-AUC = {{ metrics.applicability_domain.test_in_domain_metrics.ROC_AUC }}).
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="subgrid-2">
+        <div class="card">
+          <h2>ROC &amp; Precision-Recall Curves (External Test Set)</h2>
+          <img class="fig-img" src="/figures/roc_pr_curves.png" alt="ROC and PR curves" />
+        </div>
+        <div class="card">
+          <h2>Model Benchmark &amp; Confusion Matrix</h2>
+          <img class="fig-img" src="/figures/confusion_and_metrics.png" alt="Confusion matrix and metrics" />
+        </div>
+        <div class="card">
+          <h2>Applicability Domain &amp; Y-Randomization</h2>
+          <img class="fig-img" src="/figures/applicability_domain_and_yrand.png" alt="Applicability domain and Y-randomization" />
+        </div>
+        <div class="card">
+          <h2>Fine-Tuned ChemBERTa-2 Latent Chemical Space</h2>
+          <img class="fig-img" src="/figures/chemical_space_pca.png" alt="Chemical space PCA" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let jsmeApplet = null;
+    let lastBatchResults = [];
+
+    function jsmeOnLoad() {
+      try {
+        document.getElementById("jsme_placeholder").style.display = "none";
+        jsmeApplet = new JSApplet.JSME("jsme_container", "100%", "290px", {
+          options: "newlook,star"
+        });
+      } catch (e) {
+        console.warn("JSME offline fallback:", e);
+      }
+    }
+
+    function useDrawnSmiles() {
+      if (!jsmeApplet) {
+        alert("2D Sketcher requires internet to load JSME applet, or paste SMILES directly below.");
+        return;
+      }
+      const smi = jsmeApplet.smiles();
+      if (!smi) {
+        alert("Draw a molecule on the canvas first.");
+        return;
+      }
+      document.getElementById("smilesInput").value = smi;
+      runSinglePrediction();
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById("tab-" + name).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function loadPreset(smi) {
+      document.getElementById("smilesInput").value = smi;
+      runSinglePrediction();
+    }
+
+    async function runSinglePrediction() {
+      const smi = document.getElementById("smilesInput").value.trim();
+      const errBox = document.getElementById("errorBox");
+      const spinner = document.getElementById("singleSpinner");
+      errBox.style.display = "none";
+      if (!smi) return;
+
+      spinner.style.display = "inline-block";
+      try {
+        const resp = await fetch("/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ smiles: smi })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || "Prediction failed");
+        }
+        renderSingleResult(data);
+      } catch (err) {
+        errBox.textContent = err.message;
+        errBox.style.display = "block";
+      } finally {
+        spinner.style.display = "none";
+      }
+    }
+
+    function renderSingleResult(d) {
+      const banner = document.getElementById("verdictBanner");
+      const isAct = d.predicted_label === 1;
+      banner.className = "verdict-banner " + (isAct ? "verdict-active" : "verdict-inactive");
+      document.getElementById("predTitle").textContent = d.prediction_text;
+      document.getElementById("predSubtitle").textContent =
+        `Calibrated Decision Threshold = ${(d.threshold * 100).toFixed(1)}% | Formula: ${d.profile.formula}`;
+      document.getElementById("predProb").textContent = (d.probability * 100).toFixed(1) + "%";
+
+      const sLlm = d.component_scores.chemberta_finetuned_llm;
+      const sMlp = d.component_scores.multimodal_llm_mlp;
+      const sStr = d.component_scores.chiral_ecfp4_ensemble;
+      document.getElementById("scoreLlm").textContent = (sLlm * 100).toFixed(1) + "%";
+      document.getElementById("barLlm").style.width = (sLlm * 100).toFixed(1) + "%";
+      document.getElementById("scoreMlp").textContent = (sMlp * 100).toFixed(1) + "%";
+      document.getElementById("barMlp").style.width = (sMlp * 100).toFixed(1) + "%";
+      document.getElementById("scoreStruct").textContent = (sStr * 100).toFixed(1) + "%";
+      document.getElementById("barStruct").style.width = (sStr * 100).toFixed(1) + "%";
+
+      const ad = d.applicability_domain;
+      const adBadge = document.getElementById("adBadge");
+      adBadge.textContent = ad.status;
+      adBadge.className = "badge badge-" + ad.level;
+      document.getElementById("adCos").textContent = ad.top5_llm_cosine.toFixed(4);
+      document.getElementById("adCut").textContent = ad.strict_cutoff.toFixed(4);
+      document.getElementById("adTan").textContent = ad.max_tanimoto.toFixed(3);
+      document.getElementById("outInchi").textContent = d.inchikey;
+
+      document.getElementById("explainSvgBox").innerHTML = d.explain_svg;
+      document.getElementById("plainSvgBox").innerHTML = d.plain_svg;
+      document.getElementById("outCanSmiles").textContent = d.canonical_smiles;
+
+      const p = d.profile;
+      document.getElementById("ruleBadges").innerHTML =
+        `<span class="badge ${p.lipinski_pass ? 'badge-high' : 'badge-low'}">Lipinski Ro5: ${p.lipinski_pass ? 'PASS' : 'FAIL'} (${p.lipinski_violations} viol.)</span> ` +
+        `<span class="badge ${p.veber_pass ? 'badge-high' : 'badge-moderate'}">Veber: ${p.veber_pass ? 'PASS' : 'FAIL'}</span>`;
+
+      const props = [
+        ["Mol. Weight", p.MW + " Da"],
+        ["cLogP", p.cLogP],
+        ["TPSA", p.TPSA + " Å²"],
+        ["H-Bond Donors", p.HBD],
+        ["H-Bond Acceptors", p.HBA],
+        ["Rotatable Bonds", p.RotBonds],
+        ["Heterocycles", p.HeteroCycles],
+        ["Aromatic Rings", p.ArRings],
+        ["Fraction Csp3", p.Fsp3],
+        ["QED Score", p.QED]
+      ];
+      document.getElementById("propGrid").innerHTML = props
+        .map(([k, v]) => `<div class="prop-tile"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+        .join("");
+
+      document.getElementById("motifList").textContent =
+        p.detected_motifs.length ? p.detected_motifs.join("  •  ") : "No canonical reference SMARTS alert triggered (novel/unlisted chemotype)";
+
+      document.getElementById("analogGrid").innerHTML = d.nearest_analogs.map(a => `
+        <div class="analog-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <strong style="font-size:0.83rem;">Train No. ${a.No}</strong>
+            <span class="badge ${a.label === 1 ? 'badge-high' : 'badge-low'}">${a.activity_text}</span>
+          </div>
+          <div>${a.svg}</div>
+          <div style="font-size:0.77rem; color:var(--muted); margin-top:4px;">
+            Tanimoto: <strong>${a.tanimoto}</strong> | LLM Sim: <strong>${a.llm_cosine}</strong>
+          </div>
+          <button class="btn btn-outline" style="margin-top:6px; width:100%;" onclick="loadPreset('${a.smiles.replace(/'/g, "\\'")}')">Inspect Analog</button>
+        </div>
+      `).join("");
+    }
+
+    function loadSampleBatch() {
+      document.getElementById("batchText").value = [
+        "NCE-Brigatinib-Analog, CP(=O)(C)c1ccccc1Nc1nc(Nc2cc(CC)c(N3CCC(N4CCN(C)CC4)CC3)cc2OC)ncc1Br",
+        "NCE-SulfonylIndole-Rescue, C=CC(=O)Nc1cc(Nc2nccc(-c3cn(S(=O)(=O)CC)c4ccccc34)n2)cc2cnn(CCN(C)C)c12",
+        "Ctrl-NMeIndole-Inactive, C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)cc2cnn(CCN(C)C)c12",
+        "Chiral-Isomer-Active, C([C@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O",
+        "Chiral-Isomer-Inactive, C([C@@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O",
+        "NCE-ThiazoleSulfonamide, CCS(=O)(=O)Nc1nc(-c2ccc(F)cc2)c(-c2ccnc(Nc3ccc(N4CCN(C)CC4)cc3OC)n2)s1"
+      ].join("\n");
+    }
+
+    async function runTextBatch() {
+      const lines = document.getElementById("batchText").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (!lines.length) return;
+      const items = lines.map((line, i) => {
+        if (line.includes(",")) {
+          const idx = line.indexOf(",");
+          return { id: line.slice(0, idx).trim(), smiles: line.slice(idx + 1).trim() };
+        }
+        return { id: "NCE-" + (i + 1), smiles: line };
+      });
+      const resp = await fetch("/api/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items })
+      });
+      const data = await resp.json();
+      if (!resp.ok) { alert(data.detail || "Batch error"); return; }
+      renderBatchTable(data.results);
+    }
+
+    async function runCsvBatch() {
+      const fileInput = document.getElementById("csvFileInput");
+      if (!fileInput.files.length) { alert("Select a CSV file first."); return; }
+      const fd = new FormData();
+      fd.append("file", fileInput.files[0]);
+      const resp = await fetch("/api/batch_csv", { method: "POST", body: fd });
+      const data = await resp.json();
+      if (!resp.ok) { alert(data.detail || "CSV upload error"); return; }
+      renderBatchTable(data.results);
+    }
+
+    function renderBatchTable(rows) {
+      lastBatchResults = rows;
+      const card = document.getElementById("batchResultsCard");
+      card.style.display = "block";
+      const nAct = rows.filter(r => r.Predicted_Class === 1).length;
+      const nAd = rows.filter(r => r.AD_Status === "In-Domain").length;
+      document.getElementById("batchSummaryTitle").textContent =
+        `Screened ${rows.length} NCEs — ${nAct} Predicted Active (${((nAct / rows.length) * 100).toFixed(1)}%) | ${nAd} In-Domain`;
+
+      const tbody = document.querySelector("#batchTable tbody");
+      tbody.innerHTML = rows.map(r => {
+        if (!r.Valid) {
+          return `<tr><td>${r.ID}</td><td colspan="11" style="color:var(--coral);">Invalid SMILES: ${r.Input_SMILES}</td></tr>`;
+        }
+        const badgeCls = r.Predicted_Class === 1 ? "badge-high" : "badge-low";
+        const adCls = r.AD_Status === "In-Domain" ? "badge-high" : (r.AD_Status === "Borderline" ? "badge-moderate" : "badge-low");
+        return `<tr>
+          <td><strong>${r.ID}</strong></td>
+          <td><span class="badge ${badgeCls}">${r.Prediction}</span></td>
+          <td><strong>${(r.Probability_Active * 100).toFixed(1)}%</strong></td>
+          <td>${(r.ChemBERTa_LLM_Score * 100).toFixed(1)}%</td>
+          <td><span class="badge ${adCls}">${r.AD_Status}</span></td>
+          <td>${r.Max_Tanimoto_Train}</td>
+          <td>${r.MW}</td>
+          <td>${r.cLogP}</td>
+          <td>${r.TPSA}</td>
+          <td>${r.QED}</td>
+          <td>${r.Lipinski_Pass ? "Pass" : "Viol."}</td>
+          <td style="font-family:monospace; font-size:0.75rem;">${r.Canonical_SMILES}</td>
+        </tr>`;
+      }).join("");
+    }
+
+    function downloadBatchCsv() {
+      if (!lastBatchResults.length) return;
+      const cols = ["ID","Prediction","Predicted_Class","Probability_Active","ChemBERTa_LLM_Score","AD_Status","Max_Tanimoto_Train","MW","cLogP","TPSA","QED","Lipinski_Pass","Canonical_SMILES"];
+      const csvLines = [cols.join(",")];
+      for (const r of lastBatchResults) {
+        csvLines.push(cols.map(c => `"${String(r[c] ?? "").replace(/"/g, '""')}"`).join(","));
+      }
+      const blob = new Blob([csvLines.join("\n")], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "EGFR_C797S_NCE_Predictions.csv";
+      a.click();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      runSinglePrediction();
+    });
+  </script>
+  <footer style="background:#0f172a; color:#f8fafc; text-align:center; padding:14px 20px; font-size:0.85rem; font-weight:600; margin-top:24px;">
+    Developed by: Mr. Arijit Bhattacharya and Dr. Om Silakari, Department of Pharmaceutical Sciences and Drug Research, Punjabi University, Patiala, Punjab, India
+  </footer>
+</body>
+</html>

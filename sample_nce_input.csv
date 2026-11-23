@@ -1,0 +1,9 @@
+ID,SMILES,Notes
+NCE_01_Brigatinib_Analog,CP(=O)(C)c1ccccc1Nc1nc(Nc2cc(CC)c(N3CCC(N4CCN(C)CC4)CC3)cc2OC)ncc1Br,4th-gen phosphine oxide scaffold
+NCE_02_SulfonylIndole_Rescue,C=CC(=O)Nc1cc(Nc2nccc(-c3cn(S(=O)(=O)CC)c4ccccc34)n2)cc2cnn(CCN(C)C)c12,N-SO2Et indole rescues EGFR C797S activity
+NCE_03_NMeIndole_Acrylamide,C=CC(=O)Nc1cc(Nc2nccc(-c3cn(C)c4ccccc34)n2)cc2cnn(CCN(C)C)c12,N-Me indole acrylamide loses Cys797 potency
+NCE_04_Chiral_S_Isomer,C([C@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O,Active chiral enantiomer
+NCE_05_Chiral_R_Isomer,C([C@@H](C)NCc1c(nn(c1)c1nc(ncc1)Nc1c(cc(c(c1)C)N1CC[C@H](CC1)N1CCN(CC1)C)OC)c1ccccc1)O,Inactive chiral enantiomer cliff
+NCE_06_Thiazole_Sulfonamide,CCS(=O)(=O)Nc1nc(-c2ccc(F)cc2)c(-c2ccnc(Nc3ccc(N4CCN(C)CC4)cc3OC)n2)s1,Aminothiazole-pyrimidine C797S inhibitor
+NCE_07_Purinone_Inactive,C=CC(=O)Nc1cccc(-c2c(-c3ccc(N4CCN(C)CC4)cc3)[nH]c3ncn(CC)c(=O)c23)c1,N-alkylated oxopurine inactive series
+NCE_08_Steroid_OutOfDomain,CC12CCC3C(C1CCC2O)CCC4=CC(=O)CCC34C,Unrelated non-heterocyclic scaffold (Outside AD test)
